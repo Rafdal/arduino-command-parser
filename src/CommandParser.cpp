@@ -16,12 +16,35 @@ void CommandParser::add_command(const char *command, void (*callback)(ScanUtil* 
     }
     else
     {
-        char error_message[64];
+        char error_message[128];
         snprintf(error_message, sizeof(error_message), "Command limit reached (%d)", MAX_COMMANDS);
         if (_errorCallback)
             _errorCallback(error_message);
         if (_debug_stream)
             _debug_stream->println(error_message);
+    }
+}
+
+void CommandParser::processInput(char c, bool verbose)
+{
+    if(!_inputBuffer)
+        _inputBuffer = new CaptureBuffer(128, '\n'); // Example size and terminator
+
+    if(_inputBuffer->add(c))
+    {
+        if(_debug_stream)
+        {
+            _debug_stream->println("Terminator found, processing input:");
+            _inputBuffer->dumpTo(*_debug_stream);
+            _debug_stream->println();
+        }
+        processInput(_inputBuffer->buffer(), _inputBuffer->size());
+        _inputBuffer->clear();
+    }
+    if (verbose)
+    {
+        _inputBuffer->dumpTo(Serial);
+        Serial.println();
     }
 }
 
@@ -41,7 +64,14 @@ void CommandParser::processInput(char *buffer, uint8_t buffer_size)
             _debug_stream->write(scan.current(), scan.remaining());
             _debug_stream->println("\'");
         }
-        scan.substring(cmd_buf, ',', MAX_COMMAND_LENGTH);
+        if(scan.contains(delimiter))
+        {
+            scan.substring(cmd_buf, delimiter, MAX_COMMAND_LENGTH);
+        }
+        else
+        {
+            scan.substring(cmd_buf, '\0', MAX_COMMAND_LENGTH);
+        }
         handleCommand(cmd_buf, MAX_COMMAND_LENGTH, &scan);
     }
     else if (_errorCallback)
@@ -66,7 +96,7 @@ void CommandParser::handleCommand(char* command, uint8_t cmdlen, ScanUtil* scan)
     memcpy(_last_command_alnum, _previous_command_backup, MAX_COMMAND_LENGTH);
     if (_errorCallback)
     {
-        char error_message[64];
+        char error_message[128];
         snprintf(error_message, sizeof(error_message), "Command \'%s' not found", command);
         _errorCallback(error_message);
     }

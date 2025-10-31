@@ -57,7 +57,32 @@ public:
     int seek(const char* cstr);
 
     /**
-     * @brief Seek string BUT don't move
+     * @brief Seek string and if found move to the position after
+     * 
+     * @param cstr  C-style string (null-terminated string)
+     * @retval 1 = found
+     * @retval 0 = not found or mismatch
+     */
+    int seekIf(char* cstr)
+    {
+        int originalPos = pos;
+        int res = seek(cstr);
+        if(res == 0)
+            pos = originalPos; // restore position
+        return res;
+    }
+
+    /**
+     * @brief Seek string and move to the position after
+     * 
+     * @param cstr  C-style string (null-terminated string)
+     * @retval 1 = found
+     * @retval 0 = not found or mismatch
+     */
+    int seekIf(const char* cstr);
+
+    /**
+     * @brief Don't move, just tell if cstr is contained
      * 
      * @param cstr  C-style string (null-terminated string)
      * @retval 1 = found
@@ -69,13 +94,30 @@ public:
     }
 
     /**
-     * @brief Seek string BUT don't move
+     * @brief Don't move, just tell if cstr is contained
      * 
      * @param cstr  C-style string (null-terminated string)
      * @retval 1 = found
      * @retval 0 = not found or mismatch
      */
     bool contains(const char* cstr);
+
+    /**
+     * @brief Check if character c is contained in the remaining string
+     * 
+     * @param c character to search
+     * @retval true = found
+     * @retval false = not found
+     */
+    bool contains(char c)
+    {
+        for(unsigned int i=pos; i<size; i++)
+        {
+            if(str[i] == c)
+                return true;
+        }
+        return false;
+    }
 
     /**
      * @brief Check if current position matches cstr
@@ -197,6 +239,12 @@ inline int ScanUtil::seek(const char *cstr)
 {
     char *p = const_cast<char *>(cstr);
     return seek(p);
+}
+
+inline int ScanUtil::seekIf(const char *cstr)
+{
+    char *p = const_cast<char *>(cstr);
+    return seekIf(p);
 }
 
 inline bool ScanUtil::contains(const char *cstr)

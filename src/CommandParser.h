@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "ScanUtil.h"
+#include "CaptureBuffer.hpp"
 
 #define MAX_COMMANDS        16
 #define MAX_COMMAND_LENGTH  32
@@ -15,6 +16,7 @@ public:
     void add_command(const char* command, void (*callback)(ScanUtil* scan), bool echo = true);
     
     void processInput(char* buffer, uint8_t buffer_size);
+    void processInput(char c, bool verbose = false);
     
     inline void set_prefix(const char* prefix)
     {
@@ -29,12 +31,16 @@ public:
 
     inline void set_debug_stream(Stream* stream) { _debug_stream = stream; }
 
+    char delimiter = ','; // Default delimiter
+
 private:
     struct Command {
         char name[MAX_COMMAND_LENGTH];
         void (*callback)(ScanUtil* scan);
         bool echo;
     };
+
+    CaptureBuffer* _inputBuffer = nullptr; // Unused if processing full strings
 
     char _last_command_alnum[MAX_COMMAND_LENGTH] = {0}; // Last command received
     char _previous_command_backup[MAX_COMMAND_LENGTH] = {0}; // Backup of the last command
