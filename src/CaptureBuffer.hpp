@@ -9,6 +9,7 @@ class CaptureBuffer {
 		uint16_t buffer_size_max = 0;
 		uint16_t buffer_index = 0;
 		char terminator = '\0';
+		bool terminator_found = false;
 		const char* ignore_chars = "\r\n"; // Characters to ignore while capturing
 
 	public:
@@ -31,12 +32,14 @@ class CaptureBuffer {
 			if(buffer_ptr) 
 				memset(buffer_ptr, 0, buffer_size_max);
 			buffer_index = 0;
+			terminator_found = false;
 		}
 		bool add(char c)
 		{
 			if(c == terminator)
 			{
 				buffer_ptr[buffer_index] = '\0'; // Null-terminate
+				terminator_found = true;
 				return true; // Indicate termination
 			}
 			else if(strchr(ignore_chars, c) != nullptr)
@@ -64,6 +67,7 @@ class CaptureBuffer {
 		}
 		char* buffer() { return buffer_ptr; }
 		uint16_t size() { return buffer_index; }
+		bool isTerminated() { return terminator_found; }
 		void dumpTo(Stream& stream)
 		{
 			stream.print("buffer[");

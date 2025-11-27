@@ -32,12 +32,12 @@ void CommandParser::processInput(char c, bool verbose)
 
     if(_inputBuffer->add(c))
     {
-        if(_debug_stream)
-        {
-            _debug_stream->println("Terminator found, processing input:");
-            _inputBuffer->dumpTo(*_debug_stream);
-            _debug_stream->println();
-        }
+        // if(_debug_stream)
+        // {
+        //     _debug_stream->println("Terminator found, processing input:");
+        //     _inputBuffer->dumpTo(*_debug_stream);
+        //     _debug_stream->println();
+        // }
         processInput(_inputBuffer->buffer(), _inputBuffer->size());
         _inputBuffer->clear();
     }

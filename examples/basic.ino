@@ -54,7 +54,7 @@ void loop()
 	if(Serial.available())
 	{
 		char c = Serial.read();
-		Serial.write(c); // Echo back the received character
+		// Serial.write(c); // Echo back the received character
 		commandParser.processInput(c);
 	}
 }
